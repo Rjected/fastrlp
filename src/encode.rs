@@ -186,7 +186,7 @@ mod ethnum_support {
 #[cfg(feature = "ethereum-types")]
 mod ethereum_types_support {
     use super::*;
-    use ethereum_types::*;
+    use ethereum_types::{U128 as eth_u128, U256 as eth_u256, U512 as eth_u512, U64 as eth_u64, *};
 
     macro_rules! fixed_hash_impl {
         ($t:ty) => {
@@ -212,6 +212,31 @@ mod ethereum_types_support {
     fixed_hash_impl!(H512);
     fixed_hash_impl!(H520);
     fixed_hash_impl!(Bloom);
+
+    macro_rules! fixed_uint_impl {
+        ($t:ty, $n_bytes:tt) => {
+            impl Encodable for $t {
+                fn length(&self) -> usize {
+                    let temp_arr = &mut [0u8; $n_bytes];
+                    self.to_big_endian(temp_arr);
+                    temp_arr.length()
+                }
+
+                fn encode(&self, out: &mut dyn bytes::BufMut) {
+                    let mut temp_arr = [0u8; $n_bytes];
+                    self.to_big_endian(&mut temp_arr[..]);
+                    // cut the leading zeros after converting to big endian
+                    let sliced = &temp_arr[(self.leading_zeros() / 8) as usize..];
+                    sliced.encode(out);
+                }
+            }
+        };
+    }
+
+    fixed_uint_impl!(eth_u64, 8);
+    fixed_uint_impl!(eth_u128, 16);
+    fixed_uint_impl!(eth_u256, 32);
+    fixed_uint_impl!(eth_u512, 64);
 }
 
 macro_rules! slice_impl {
@@ -399,6 +424,48 @@ mod tests {
         )])
     }
 
+    #[cfg(feature = "ethereum-types")]
+    fn eth_u64_fixtures() -> impl IntoIterator<Item = (ethereum_types::U64, &'static [u8])> {
+        c(u64_fixtures()).chain(vec![
+            (
+                ethereum_types::U64::from_str_radix("FFCCB5DDFF", 16).unwrap(),
+                &hex!("85ffccb5ddff")[..],
+            ),
+            (
+                ethereum_types::U64::from_str_radix("FFCCB5DDFFEE", 16).unwrap(),
+                &hex!("86ffccb5ddffee")[..],
+            ),
+            (
+                ethereum_types::U64::from_str_radix("FFCCB5DDFFEE14", 16).unwrap(),
+                &hex!("87ffccb5ddffee14")[..],
+            ),
+            (
+                ethereum_types::U64::from_str_radix("FFCCB5DDFFEE1483", 16).unwrap(),
+                &hex!("88ffccb5ddffee1483")[..],
+            ),
+        ])
+    }
+
+    #[cfg(feature = "ethereum-types")]
+    fn eth_u128_fixtures() -> impl IntoIterator<Item = (ethereum_types::U128, &'static [u8])> {
+        c(u128_fixtures()).chain(vec![(
+            ethereum_types::U128::from_str_radix("10203E405060708090A0B0C0D0E0F2", 16).unwrap(),
+            &hex!("8f10203e405060708090a0b0c0d0e0f2")[..],
+        )])
+    }
+
+    #[cfg(feature = "ethereum-types")]
+    fn eth_u256_fixtures() -> impl IntoIterator<Item = (ethereum_types::U256, &'static [u8])> {
+        c(u128_fixtures()).chain(vec![(
+            ethereum_types::U256::from_str_radix(
+                "0100020003000400050006000700080009000A0B4B000C000D000E01",
+                16,
+            )
+            .unwrap(),
+            &hex!("9c0100020003000400050006000700080009000a0b4b000c000d000e01")[..],
+        )])
+    }
+
     macro_rules! uint_rlp_test {
         ($fixtures:expr) => {
             for (input, output) in $fixtures {
@@ -416,6 +483,14 @@ mod tests {
         uint_rlp_test!(u128_fixtures());
         #[cfg(feature = "ethnum")]
         uint_rlp_test!(u256_fixtures());
+    }
+
+    #[cfg(feature = "ethereum-types")]
+    #[test]
+    fn rlp_eth_uints() {
+        uint_rlp_test!(eth_u64_fixtures());
+        uint_rlp_test!(eth_u128_fixtures());
+        uint_rlp_test!(eth_u256_fixtures());
     }
 
     #[test]

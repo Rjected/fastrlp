@@ -11,7 +11,7 @@ arrayvec = { version = "0.7", default-features = false }
 auto_impl = "0.5"
 bytes = { version = "1", default-features = false }
 ethnum = { version = "1", default-features = false, optional = true }
-ethereum-types = { version = "0.13", default-features = false, optional = true }
+ethereum-types = { version = "0.13", default-features = false, optional = true, features = ["rlp"]}
 fastrlp-derive = { version = "0.1", path = "fastrlp-derive", optional = true }
 
 [dev-dependencies]
@@ -21,6 +21,7 @@ fastrlp-test = { path = ".", package = "fastrlp", features = [
     "ethnum",
     "ethereum-types",
 ] }
+rlp = { version = "0.5.0", default-features = false }
 criterion = "0.3"
 hex-literal = "0.3"
 
