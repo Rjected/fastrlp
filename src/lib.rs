@@ -3,8 +3,8 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-mod decode;
-mod encode;
+pub mod decode;
+pub mod encode;
 mod types;
 
 pub use bytes::BufMut;
