@@ -19,25 +19,28 @@ pub fn impl_decodable(ast: &syn::DeriveInput) -> TokenStream {
 
     let impl_block = quote! {
         impl #impl_generics fastrlp::Decodable for #name #ty_generics #where_clause {
-            fn decode(buf: &mut &[u8]) -> Result<Self, fastrlp::DecodeError> {
-                let rlp_head = fastrlp::Header::decode(buf)?;
+            fn decode(mut buf: &mut &[u8]) -> Result<Self, fastrlp::DecodeError> {
+                let b = &mut &**buf;
+                let rlp_head = fastrlp::Header::decode(b)?;
 
                 if !rlp_head.list {
                     return Err(fastrlp::DecodeError::UnexpectedString);
                 }
 
-                let started_len = buf.len();
+                let started_len = b.len();
                 let this = Self {
                     #(#stmts)*
                 };
 
-                let consumed = started_len - buf.len();
+                let consumed = started_len - b.len();
                 if consumed != rlp_head.payload_length {
                     return Err(fastrlp::DecodeError::ListLengthMismatch {
                         expected: rlp_head.payload_length,
                         got: consumed,
                     });
                 }
+
+                *buf = *b;
 
                 Ok(this)
             }
@@ -92,5 +95,5 @@ fn decodable_field(index: usize, field: &syn::Field) -> TokenStream {
         quote! { #index }
     };
 
-    quote! { #id: fastrlp::Decodable::decode(buf)?, }
+    quote! { #id: fastrlp::Decodable::decode(b)?, }
 }

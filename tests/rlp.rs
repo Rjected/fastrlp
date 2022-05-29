@@ -87,3 +87,16 @@ fn test_encode_item() {
     assert_eq!(encoded(&W(item)), expected);
     assert_eq!(W::decode(&mut &*expected).unwrap().0, decoded);
 }
+
+#[test]
+fn invalid_decode_sideeffect() {
+    let fixture = hex!("f84d0588deadbeefbaadcafea056e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421a0c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470");
+    let mut sl: &[u8] = &fixture;
+
+    assert_eq!(
+        Test4Numbers::decode(&mut sl),
+        Err(DecodeError::InputTooShort)
+    );
+
+    assert_eq!(sl.len(), fixture.len());
+}
