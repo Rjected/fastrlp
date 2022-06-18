@@ -217,9 +217,11 @@ mod ethereum_types_support {
         ($t:ty, $n_bytes:tt) => {
             impl Encodable for $t {
                 fn length(&self) -> usize {
-                    let temp_arr = &mut [0u8; $n_bytes];
-                    self.to_big_endian(temp_arr);
-                    temp_arr.length()
+                    if *self < <$t>::from(EMPTY_STRING_CODE) {
+                        1
+                    } else {
+                        1 + $n_bytes - (self.leading_zeros() as usize / 8)
+                    }
                 }
 
                 fn encode(&self, out: &mut dyn bytes::BufMut) {
