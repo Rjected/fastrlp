@@ -24,13 +24,11 @@ impl From<&[u8]> for WrappedU256 {
         if bytes.len() > 32 {
             panic!("Can't convert a byte slice greater than 32 bytes to a U256");
         }
-        WrappedU256 {
-            0: {
-                let mut u256_backing = [0u8; 32];
-                u256_backing[32 - bytes.len()..].copy_from_slice(bytes);
-                U256::from_be_bytes(u256_backing)
-            },
-        }
+        WrappedU256({
+            let mut u256_backing = [0u8; 32];
+            u256_backing[32 - bytes.len()..].copy_from_slice(bytes);
+            U256::from_be_bytes(u256_backing)
+        })
     }
 }
 
