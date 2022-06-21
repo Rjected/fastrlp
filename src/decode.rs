@@ -249,6 +249,33 @@ mod ethereum_types_support {
     fixed_hash_impl!(H512);
     fixed_hash_impl!(H520);
     fixed_hash_impl!(Bloom);
+
+    macro_rules! fixed_uint_impl {
+        ($t:ty, $n_bytes:tt) => {
+            impl Decodable for $t {
+                fn decode(buf: &mut &[u8]) -> Result<Self, DecodeError> {
+                    let h = Header::decode(buf)?;
+                    if h.list {
+                        return Err(DecodeError::UnexpectedList);
+                    }
+                    if h.payload_length > $n_bytes {
+                        return Err(DecodeError::Overflow);
+                    }
+                    if buf.remaining() < h.payload_length {
+                        return Err(DecodeError::InputTooShort);
+                    }
+                    let n = <$t>::from_big_endian(&buf[..h.payload_length]);
+                    buf.advance(h.payload_length);
+                    Ok(n)
+                }
+            }
+        };
+    }
+
+    fixed_uint_impl!(U64, 8);
+    fixed_uint_impl!(U128, 16);
+    fixed_uint_impl!(U256, 32);
+    fixed_uint_impl!(U512, 64);
 }
 
 impl<const N: usize> Decodable for [u8; N] {
