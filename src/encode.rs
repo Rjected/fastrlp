@@ -468,6 +468,18 @@ mod tests {
         )])
     }
 
+    #[cfg(feature = "ethereum-types")]
+    fn eth_u512_fixtures() -> impl IntoIterator<Item = (ethereum_types::U512, &'static [u8])> {
+        c(eth_u256_fixtures()).chain(vec![(
+            ethereum_types::U512::from_str_radix(
+                "0100020003000400050006000700080009000A0B4B000C000D000E010100020003000400050006000700080009000A0B4B000C000D000E01",
+                16,
+            )
+            .unwrap(),
+            &hex!("b8380100020003000400050006000700080009000A0B4B000C000D000E010100020003000400050006000700080009000A0B4B000C000D000E01")[..],
+        )])
+    }
+
     macro_rules! uint_rlp_test {
         ($fixtures:expr) => {
             for (input, output) in $fixtures {
@@ -493,6 +505,7 @@ mod tests {
         uint_rlp_test!(eth_u64_fixtures());
         uint_rlp_test!(eth_u128_fixtures());
         uint_rlp_test!(eth_u256_fixtures());
+        uint_rlp_test!(eth_u512_fixtures());
     }
 
     #[test]

@@ -487,6 +487,7 @@ mod tests {
         ])
     }
 
+    #[cfg(feature = "ethereum-types")]
     #[test]
     fn rlp_ethereum_types_u64() {
         check_decode(vec![
@@ -514,6 +515,7 @@ mod tests {
         ])
     }
 
+    #[cfg(feature = "ethereum-types")]
     #[test]
     fn rlp_ethereum_types_u128() {
         check_decode(vec![
@@ -541,6 +543,7 @@ mod tests {
         ])
     }
 
+    #[cfg(feature = "ethereum-types")]
     #[test]
     fn rlp_ethereum_types_u256() {
         check_decode(vec![
@@ -568,6 +571,7 @@ mod tests {
         ])
     }
 
+    #[cfg(feature = "ethereum-types")]
     #[test]
     fn rlp_ethereum_types_u512() {
         check_decode(vec![
