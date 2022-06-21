@@ -186,7 +186,7 @@ mod ethnum_support {
 #[cfg(feature = "ethereum-types")]
 mod ethereum_types_support {
     use super::*;
-    use ethereum_types::{U128 as eth_u128, U256 as eth_u256, U512 as eth_u512, U64 as eth_u64, *};
+    use ethereum_types::*;
 
     macro_rules! fixed_hash_impl {
         ($t:ty) => {
@@ -235,10 +235,10 @@ mod ethereum_types_support {
         };
     }
 
-    fixed_uint_impl!(eth_u64, 8);
-    fixed_uint_impl!(eth_u128, 16);
-    fixed_uint_impl!(eth_u256, 32);
-    fixed_uint_impl!(eth_u512, 64);
+    fixed_uint_impl!(U64, 8);
+    fixed_uint_impl!(U128, 16);
+    fixed_uint_impl!(U256, 32);
+    fixed_uint_impl!(U512, 64);
 }
 
 macro_rules! slice_impl {
