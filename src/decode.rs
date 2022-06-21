@@ -265,7 +265,8 @@ mod ethereum_types_support {
                         return Err(DecodeError::InputTooShort);
                     }
                     let n = <$t>::from_big_endian(
-                        &static_left_pad::<$n_bytes>(&buf[..h.payload_length]).ok_or(DecodeError::LeadingZero)?,
+                        &static_left_pad::<$n_bytes>(&buf[..h.payload_length])
+                            .ok_or(DecodeError::LeadingZero)?,
                     );
                     buf.advance(h.payload_length);
                     Ok(n)
@@ -373,8 +374,8 @@ mod tests {
     use super::*;
     use alloc::vec;
     use core::fmt::Debug;
+    use ethereum_types::{U128, U256, U512, U64};
     use ethnum::AsU256;
-    use ethereum_types::{U64, U128, U256, U512};
     use hex_literal::hex;
 
     fn check_decode<T, IT>(fixtures: IT)
