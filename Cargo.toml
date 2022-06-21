@@ -21,7 +21,7 @@ fastrlp-test = { path = ".", package = "fastrlp", features = [
     "ethnum",
     "ethereum-types",
 ] }
-ethereum-types = { version = "0.13", default-features = false, features = ["rlp"] }
+ethereum-types = { version = "0.13", default-features = false }
 criterion = "0.3"
 hex-literal = "0.3"
 
