@@ -67,5 +67,6 @@ fn bench_decode(c: &mut Criterion) {
         });
     });
 }
+
 criterion_group!(benches, bench_encode, bench_decode);
 criterion_main!(benches);

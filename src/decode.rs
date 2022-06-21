@@ -264,7 +264,9 @@ mod ethereum_types_support {
                     if buf.remaining() < h.payload_length {
                         return Err(DecodeError::InputTooShort);
                     }
-                    let n = <$t>::from_big_endian(&buf[..h.payload_length]);
+                    let n = <$t>::from_big_endian(
+                        &static_left_pad::<$n_bytes>(&buf[..h.payload_length]).ok_or(DecodeError::LeadingZero)?,
+                    );
                     buf.advance(h.payload_length);
                     Ok(n)
                 }
@@ -372,6 +374,7 @@ mod tests {
     use alloc::vec;
     use core::fmt::Debug;
     use ethnum::AsU256;
+    use ethereum_types::{U64, U128, U256, U512};
     use hex_literal::hex;
 
     fn check_decode<T, IT>(fixtures: IT)
@@ -480,6 +483,118 @@ mod tests {
             (
                 Err(DecodeError::Overflow),
                 &hex!("A101000000000000000000000000000000000000008B000000000000000000000000")[..],
+            ),
+        ])
+    }
+
+    #[test]
+    fn rlp_ethereum_types_u64() {
+        check_decode(vec![
+            (Ok(U64::from(9_u8)), &hex!("09")[..]),
+            (Ok(U64::from(0_u8)), &hex!("80")[..]),
+            (Ok(U64::from(0x0505_u16)), &hex!("820505")[..]),
+            (Ok(U64::from(0xCE05050505_u64)), &hex!("85CE05050505")[..]),
+            (
+                Err(DecodeError::Overflow),
+                &hex!("8AFFFFFFFFFFFFFFFFFF7C")[..],
+            ),
+            (
+                Err(DecodeError::InputTooShort),
+                &hex!("8BFFFFFFFFFFFFFFFFFF7C")[..],
+            ),
+            (Err(DecodeError::UnexpectedList), &hex!("C0")[..]),
+            (Err(DecodeError::LeadingZero), &hex!("00")[..]),
+            (Err(DecodeError::NonCanonicalSingleByte), &hex!("8105")[..]),
+            (Err(DecodeError::LeadingZero), &hex!("8200F4")[..]),
+            (Err(DecodeError::NonCanonicalSize), &hex!("B8020004")[..]),
+            (
+                Err(DecodeError::Overflow),
+                &hex!("A101000000000000000000000000000000000000008B000000000000000000000000")[..],
+            ),
+        ])
+    }
+
+    #[test]
+    fn rlp_ethereum_types_u128() {
+        check_decode(vec![
+            (Ok(U128::from(9_u8)), &hex!("09")[..]),
+            (Ok(U128::from(0_u8)), &hex!("80")[..]),
+            (Ok(U128::from(0x0505_u16)), &hex!("820505")[..]),
+            (Ok(U128::from(0xCE05050505_u64)), &hex!("85CE05050505")[..]),
+            (
+                Ok(U128::from(0xFFFFFFFFFFFFFFFFFF7C_u128)),
+                &hex!("8AFFFFFFFFFFFFFFFFFF7C")[..],
+            ),
+            (
+                Err(DecodeError::InputTooShort),
+                &hex!("8BFFFFFFFFFFFFFFFFFF7C")[..],
+            ),
+            (Err(DecodeError::UnexpectedList), &hex!("C0")[..]),
+            (Err(DecodeError::LeadingZero), &hex!("00")[..]),
+            (Err(DecodeError::NonCanonicalSingleByte), &hex!("8105")[..]),
+            (Err(DecodeError::LeadingZero), &hex!("8200F4")[..]),
+            (Err(DecodeError::NonCanonicalSize), &hex!("B8020004")[..]),
+            (
+                Err(DecodeError::Overflow),
+                &hex!("A101000000000000000000000000000000000000008B000000000000000000000000")[..],
+            ),
+        ])
+    }
+
+    #[test]
+    fn rlp_ethereum_types_u256() {
+        check_decode(vec![
+            (Ok(U256::from(9_u8)), &hex!("09")[..]),
+            (Ok(U256::from(0_u8)), &hex!("80")[..]),
+            (Ok(U256::from(0x0505_u16)), &hex!("820505")[..]),
+            (Ok(U256::from(0xCE05050505_u64)), &hex!("85CE05050505")[..]),
+            (
+                Ok(U256::from(0xFFFFFFFFFFFFFFFFFF7C_u128)),
+                &hex!("8AFFFFFFFFFFFFFFFFFF7C")[..],
+            ),
+            (
+                Err(DecodeError::InputTooShort),
+                &hex!("8BFFFFFFFFFFFFFFFFFF7C")[..],
+            ),
+            (Err(DecodeError::UnexpectedList), &hex!("C0")[..]),
+            (Err(DecodeError::LeadingZero), &hex!("00")[..]),
+            (Err(DecodeError::NonCanonicalSingleByte), &hex!("8105")[..]),
+            (Err(DecodeError::LeadingZero), &hex!("8200F4")[..]),
+            (Err(DecodeError::NonCanonicalSize), &hex!("B8020004")[..]),
+            (
+                Err(DecodeError::Overflow),
+                &hex!("A101000000000000000000000000000000000000008B000000000000000000000000")[..],
+            ),
+        ])
+    }
+
+    #[test]
+    fn rlp_ethereum_types_u512() {
+        check_decode(vec![
+            (Ok(U512::from(9_u8)), &hex!("09")[..]),
+            (Ok(U512::from(0_u8)), &hex!("80")[..]),
+            (Ok(U512::from(0x0505_u16)), &hex!("820505")[..]),
+            (Ok(U512::from(0xCE05050505_u64)), &hex!("85CE05050505")[..]),
+            (
+                Ok(U512::from(0xFFFFFFFFFFFFFFFFFF7C_u128)),
+                &hex!("8AFFFFFFFFFFFFFFFFFF7C")[..],
+            ),
+            (
+                Err(DecodeError::InputTooShort),
+                &hex!("8BFFFFFFFFFFFFFFFFFF7C")[..],
+            ),
+            (Err(DecodeError::UnexpectedList), &hex!("C0")[..]),
+            (Err(DecodeError::LeadingZero), &hex!("00")[..]),
+            (Err(DecodeError::NonCanonicalSingleByte), &hex!("8105")[..]),
+            (Err(DecodeError::LeadingZero), &hex!("8200F4")[..]),
+            (Err(DecodeError::NonCanonicalSize), &hex!("B8020004")[..]),
+            (
+                Ok(U512::from_dec_str("115792089237316195423570985008687907853269984676653278628940326933415738736640").unwrap()),
+                &hex!("A101000000000000000000000000000000000000008B000000000000000000000000")[..],
+            ),
+            (
+                Err(DecodeError::Overflow),
+                &hex!("B84101000000000000000000000000000000000000008B000000000000000000000000000000000000000000000000000000000000008B000000000000000000000000")[..],
             ),
         ])
     }
